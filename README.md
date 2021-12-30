@@ -1,7 +1,7 @@
 # Azure Automation - Start and Stop VM
 This sample combines terraform and powershell to deploy an Azure Automation account with runbooks and schedules in order to manage VM off-hours state.
 
-Terraform is used to create Azure resources that will run the powershell runbook. The runbook itself stops and start VMs based on a tag defined on them (see instructions below). Please note that this runbook do not manage each day of the week independently but as 2 groups : weekdays and weekends. It means that a VM will be stopped and started every day from monday to friday and/or from saturday to sunday.
+Terraform is used to create Azure resources that will run the powershell runbook. The runbook itself stops and starts VMs based on a tag defined on them (see instructions below). Please note that this runbook do not manage each day of the week independently but as 2 groups : weekdays and weekends. It means that a VM will be stopped and started every day from monday to friday and/or from saturday to sunday.
 
 This runbook will target all VMs in a defined subscription, a specific resource group in that subscription can be specified for more precise targetting.
 
@@ -19,7 +19,7 @@ Using this sample should be easy :
 2. Deploy the tag on your target VMs (check the *locals.tf* file for tag sample)
 3. Get rid of the sample VM if you don't need to test it first
 4. Rename the *terraform.tfvars.sample* file into *terraform.tfvars* and update the subscription ID
-5. Update the *r-runbooks.tf* file to define schedules according to your needs and update if necessary the parameters sent to the runbook (see Runbook part below)
+5. Update the *locals.tf* file to define schedules according to your needs and update if necessary the parameters sent to the runbook in the *r-runbook.tf* file (see Runbook part below)
 
 
 ## Runbook

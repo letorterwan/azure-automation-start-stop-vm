@@ -23,7 +23,7 @@ resource "azurerm_automation_schedule" "update-psmodules-schedule" {
   frequency               = "Month"
   interval                = 1
   timezone                = "Europe/Paris"
-  start_time              = "2021-07-01T05:00:00+01:00" # A future update should manage this more dynamically
+  start_time              = local.schedule_updatepsmodules_start_time
   description             = "Monthly schedule to update PS Az modules"
   month_days              = ["1"]
 }
@@ -60,49 +60,27 @@ resource "azurerm_automation_runbook" "start-and-stop-vm" {
   content                 = data.local_file.start-and-stop-vm-script.content
 }
 
-# Create the schedule
+# Create the schedules
 resource "azurerm_automation_schedule" "start-and-stop-vm-schedule" {
-  name                    = "Start and Stop VMs schedule"
+  for_each = local.startandstop_schedules
+
+  name                    = each.key
   resource_group_name     = azurerm_resource_group.rg.name
   automation_account_name = azurerm_automation_account.automation-account.name
   frequency               = "Hour"
   interval                = 1
   timezone                = "Europe/Paris"
-  start_time              = "2021-07-08T13:00:00+00:00" # UTC time, the timezone attribute will be added to this
+  start_time              = each.value
   description             = "Hourly schedule to start and stop VMs"
 }
 
-# And finally connect the schedule to the runbook
+# And finally connect the schedules to the runbook
 resource "azurerm_automation_job_schedule" "start-and-stop-vm-job" {
+  for_each = local.startandstop_schedules
+
   resource_group_name     = azurerm_resource_group.rg.name
   automation_account_name = azurerm_automation_account.automation-account.name
-  schedule_name           = azurerm_automation_schedule.start-and-stop-vm-schedule.name
-  runbook_name            = azurerm_automation_runbook.start-and-stop-vm.name
-
-  parameters = {
-    subscriptionid    = var.subscription-id
-    resourcegroupname = azurerm_resource_group.rg.name
-    tagname           = "StopStartSchedule"
-    timezone          = "Romance Standard Time"
-  }
-}
-
-# Schedule sample to handle start and stop at half-hour
-resource "azurerm_automation_schedule" "start-and-stop-vm-schedule-2" {
-  name                    = "Start and Stop VMs schedule - Half-hour"
-  resource_group_name     = azurerm_resource_group.rg.name
-  automation_account_name = azurerm_automation_account.automation-account.name
-  frequency               = "Hour"
-  interval                = 1
-  timezone                = "Europe/Paris"
-  start_time              = "2021-07-08T14:30:00+00:00" # UTC time, the timezone attribute will be added to this
-  description             = "Hourly schedule to start and stop VMs"
-}
-
-resource "azurerm_automation_job_schedule" "start-and-stop-vm-job-2" {
-  resource_group_name     = azurerm_resource_group.rg.name
-  automation_account_name = azurerm_automation_account.automation-account.name
-  schedule_name           = azurerm_automation_schedule.start-and-stop-vm-schedule-2.name
+  schedule_name           = each.key
   runbook_name            = azurerm_automation_runbook.start-and-stop-vm.name
 
   parameters = {
